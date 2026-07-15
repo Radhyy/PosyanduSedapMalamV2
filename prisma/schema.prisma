@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  admin
+  kader
+  orangtua
+}
+
+enum JenisKelamin {
+  L
+  P
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  username  String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(255)
+  role      Role
+  createdAt DateTime @default(now())
+  
+  // Relations
+  orangTua     OrangTua?
+  kader        Kader?
+  imunisasi    Imunisasi[]
+  pengukuran   Pengukuran[]
+
+  @@map("users")
+}
+
+model OrangTua {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  nikIbu    String   @db.VarChar(16)
+  namaIbu   String   @db.VarChar(100)
+  noTelp    String?  @db.VarChar(15)
+  alamat    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balita    Balita[]
+
+  @@map("orangtua")
+}
+
+model Balita {
+  id           Int          @id @default(autoincrement())
+  orangtuaId   Int
+  nikBalita    String?      @db.VarChar(16)
+  namaBalita   String       @db.VarChar(100)
+  tanggalLahir DateTime     @db.Date
+  jenisKelamin JenisKelamin
+  beratLahir   Float
+  panjangLahir Float
+  createdAt    DateTime     @default(now())
+
+  // Relations
+  orangtua   OrangTua     @relation(fields: [orangtuaId], references: [id], onDelete: Cascade)
+  imunisasi  Imunisasi[]
+  pengukuran Pengukuran[]
+
+  @@map("balita")
+}
+
+model Kader {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  nikKader  String   @db.VarChar(16)
+  namaKader String   @db.VarChar(100)
+  jabatan   String?  @db.VarChar(50)
+  noTelp    String?  @db.VarChar(15)
+  alamat    String?  @db.Text
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kader")
+}
+
+model Imunisasi {
+  id                Int      @id @default(autoincrement())
+  balitaId          Int
+  kaderId           Int?
+  tanggalImunisasi  DateTime @db.Date
+  usiaSaatImunisasi Int      // Usia dalam bulan
+  jenisImunisasi    String   @db.VarChar(50)
+  keterangan        String?  @db.Text
+  createdAt         DateTime @default(now())
+
+  // Relations
+  balita Balita @relation(fields: [balitaId], references: [id], onDelete: Cascade)
+  kader  User?  @relation(fields: [kaderId], references: [id], onDelete: SetNull)
+
+  @@map("imunisasi")
+}
+
+model Pengukuran {
+  id                 Int      @id @default(autoincrement())
+  balitaId           Int
+  kaderId            Int?
+  tanggalPengukuran  DateTime @db.Date
+  usiaSaatDiukur     Int      // Usia dalam bulan
+  beratBadan         Float
+  tinggiBadan        Float
+  lingkarKepala      Float?
+  catatan            String?  @db.Text
+  createdAt          DateTime @default(now())
+
+  // Relations
+  balita Balita @relation(fields: [balitaId], references: [id], onDelete: Cascade)
+  kader  User?  @relation(fields: [kaderId], references: [id], onDelete: SetNull)
+
+  @@map("pengukuran")
+}
+
+model JadwalPosyandu {
+  id           Int      @id @default(autoincrement())
+  tanggal      DateTime @db.Date
+  waktuMulai   String   @db.VarChar(50) 
+  waktuSelesai String   @db.VarChar(50)
+  lokasi       String   @db.VarChar(255)
+  agenda       String   @db.Text
+  isActive     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@map("jadwal_posyandu")
+}
+
+model PengingatJadwal {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique @db.VarChar(100)
+  statusAktif Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("pengingat_jadwal")
+}
