@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
-// 1. IMPORT COMPONENT CHATBOT KAMU DI SINI
-import Chatbot from "@/components/Chatbot";
+import dynamic from "next/dynamic";
+const Chatbot = dynamic(() => import("@/components/Chatbot"), { ssr: false });
 
 const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700', '800'],
