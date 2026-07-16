@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
+// 1. IMPORT COMPONENT CHATBOT KAMU DI SINI
+import Chatbot from "@/components/Chatbot";
 
 const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700', '800'],
@@ -28,7 +30,11 @@ export default function RootLayout({
         />
       </head>
       <body className={`${poppins.variable} font-sans min-h-screen flex flex-col bg-gray-50 text-gray-800 antialiased selection:bg-posyandu-blue selection:text-white`}>
+        {/* Semua halaman web kamu akan di-render di sini */}
         {children}
+
+        {/* 2. PASANG CHATBOT DI SINI */}
+        <Chatbot />
       </body>
     </html>
   );
