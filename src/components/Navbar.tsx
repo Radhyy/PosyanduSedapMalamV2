@@ -60,12 +60,14 @@ export default function Navbar() {
                     <div className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Masuk Sebagai</div>
                     <div className="text-sm font-bold text-gray-900">{user.role}</div>
                   </div>
-                  <Link 
-                    href={user.role === 'ADMIN' ? '/admin' : '/kader'} 
-                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl hover:bg-blue-50 hover:text-posyandu-blue transition-colors"
-                  >
-                    <i className="fa-solid fa-table-columns w-4 text-center"></i> Dashboard
-                  </Link>
+                  {user.role !== 'orangtua' && (
+                    <Link 
+                      href={user.role === 'admin' ? '/admin' : '/kader'} 
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 rounded-xl hover:bg-blue-50 hover:text-posyandu-blue transition-colors"
+                    >
+                      <i className="fa-solid fa-table-columns w-4 text-center"></i> Dashboard
+                    </Link>
+                  )}
                   <button 
                     onClick={handleLogout} 
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-colors text-left"
@@ -103,13 +105,15 @@ export default function Navbar() {
               <div className="px-4 py-3 text-gray-700 font-bold bg-gray-50 rounded-xl flex items-center gap-2">
                 <i className="fa-solid fa-user-circle text-blue-500"></i> {user.displayName}
               </div>
-              <Link 
-                href={user.role === 'ADMIN' ? '/admin' : '/kader'} 
-                onClick={() => setIsMobileMenuOpen(false)} 
-                className="px-4 py-3 text-gray-700 font-bold hover:bg-blue-50 rounded-xl flex items-center gap-3"
-              >
-                <i className="fa-solid fa-table-columns w-4 text-center"></i> Ke Dashboard
-              </Link>
+              {user.role !== 'orangtua' && (
+                <Link 
+                  href={user.role === 'admin' ? '/admin' : '/kader'} 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  className="px-4 py-3 text-gray-700 font-bold hover:bg-blue-50 rounded-xl flex items-center gap-3"
+                >
+                  <i className="fa-solid fa-table-columns w-4 text-center"></i> Ke Dashboard
+                </Link>
+              )}
               <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="w-full text-left px-4 py-3 text-red-600 font-bold hover:bg-red-50 rounded-xl flex items-center gap-3">
                 <i className="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i> Logout
               </button>
