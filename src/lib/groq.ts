@@ -6,13 +6,11 @@ let currentIndex = 0;
  * Mengambil API Key Groq secara Round-Robin untuk Load Balancing
  */
 export function getNextGroqApiKey(): string {
-  const GROQ_API_KEYS = [
-    process.env.GROQ_API_KEY_1,
-    process.env.GROQ_API_KEY_2,
-    process.env.GROQ_API_KEY_3,
-    process.env.GROQ_API_KEY_4,
-    process.env.GROQ_API_KEY_5
-  ].filter(Boolean) as string[];
+  // Menggunakan bracket notation agar Next.js/Webpack tidak melakukan static replacement (hardcode)
+  // variabel environment saat proses build. Ini memaksa pembacaan secara dinamis saat runtime di Netlify.
+  const GROQ_API_KEYS = [1, 2, 3, 4, 5]
+    .map(i => process.env[`GROQ_API_KEY_${i}`])
+    .filter(Boolean) as string[];
 
   if (GROQ_API_KEYS.length === 0) {
     console.warn("Peringatan: Tidak ada API Key Groq yang ditemukan di environment variables!");
