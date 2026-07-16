@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false); // State untuk mengontrol animasi keluar
   const [size, setSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [showContextMenu, setShowContextMenu] = useState(false);
 
@@ -13,6 +14,15 @@ export default function Chatbot() {
     window.addEventListener("click", closeMenu);
     return () => window.removeEventListener("click", closeMenu);
   }, []);
+
+  // Fungsi untuk memicu animasi keluar terlebih dahulu sebelum menutup chat sepenuhnya
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+    }, 200); // Durasi disamakan dengan durasi animasi customPopDown (0.2s)
+  };
 
   // Mapping ukuran khusus laptop
   const sizeClasses = {
@@ -29,19 +39,46 @@ export default function Chatbot() {
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
+      {/* Kumpulan Animasi CSS Murni (Masuk & Keluar) */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes customFloat {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
         }
+        @keyframes customPopUp {
+          0% {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        @keyframes customPopDown {
+          0% {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+        }
         .animasi-melayang {
           animation: customFloat 3s ease-in-out infinite;
         }
+        .animasi-popup {
+          animation: customPopUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .animasi-popdown {
+          animation: customPopDown 0.2s ease-in forwards;
+        }
       `}} />
 
-      {/* 1. INTERFACES MENU KLIK KANAN (Hanya muncul saat klik kanan di laptop) */}
+      {/* 1. INTERFACES MENU KLIK KANAN */}
       {!isOpen && showContextMenu && (
-        <div className="hidden md:block absolute bottom-full right-0 mb-2 bg-white/90 backdrop-blur-sm border border-gray-100 shadow-xl rounded-xl p-1.5 min-w-[120px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="hidden md:block absolute bottom-full right-0 mb-2 bg-white/90 backdrop-blur-sm border border-gray-100 shadow-xl rounded-xl p-1.5 min-w-[120px] transition-all">
           <p className="text-[10px] font-bold text-gray-400 px-2.5 py-1 uppercase tracking-wider">Ukuran Ikon</p>
           <button 
             onClick={() => setSize('sm')} 
@@ -69,7 +106,7 @@ export default function Chatbot() {
         <button
           onClick={() => setIsOpen(true)}
           onContextMenu={(e) => {
-            e.preventDefault(); // Mencegah menu bawaan browser muncul
+            e.preventDefault();
             setShowContextMenu(true);
           }}
           title="Klik kiri untuk chat, Klik kanan untuk ubah ukuran"
@@ -92,13 +129,16 @@ export default function Chatbot() {
         </button>
       )}
 
-      {/* 3. JENDELA CHAT ASISTEN AI */}
-      {isOpen && (
-        <div className="
+      {/* 3. JENDELA CHAT ASISTEN AI (DENGAN ANIMASI MASUK & KELUAR) */}
+      {(isOpen || isClosing) && (
+        <div className={`
           fixed inset-0 flex flex-col bg-white shadow-[0_10px_40px_rgba(0,0,0,0.12)]
           md:absolute md:bottom-0 md:right-0 md:top-auto md:left-auto
           md:h-[530px] md:w-[380px] md:rounded-2xl md:border md:border-gray-100
-        ">
+          
+          origin-bottom-right
+          ${isClosing ? "animasi-popdown" : "animasi-popup"}
+        `}>
           {/* HEADER CHAT */}
           <div className="flex items-center justify-between bg-blue-600 p-4 text-white md:rounded-t-2xl">
             <div className="flex items-center gap-2">
@@ -109,9 +149,9 @@ export default function Chatbot() {
               </div>
             </div>
             
-            {/* TOMBOL BATAL (Icon X) */}
+            {/* TOMBOL BATAL / TUTUP CHAT */}
             <button 
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="p-1.5 rounded-lg hover:bg-white/20 text-white/90 hover:text-white transition-colors"
               aria-label="Tutup Chat"
             >
