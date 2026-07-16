@@ -1,145 +1,132 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+
+const Player = dynamic(
+  () => import('@lottiefiles/react-lottie-player').then((mod) => mod.Player),
+  { ssr: false }
+);
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false); // State untuk mengontrol animasi keluar
+  const [isClosing, setIsClosing] = useState(false);
   const [size, setSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [showContextMenu, setShowContextMenu] = useState(false);
+  
+  // Chat state
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([
+    { role: "assistant", content: "Halo! Saya **Asisten AI Spesialis Anak**. Ada yang bisa saya bantu terkait informasi tumbuh kembang balita dan kesehatan hari ini?" }
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Menutup menu klik kanan jika user mengklik di tempat lain
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   useEffect(() => {
     const closeMenu = () => setShowContextMenu(false);
     window.addEventListener("click", closeMenu);
     return () => window.removeEventListener("click", closeMenu);
   }, []);
 
-  // Fungsi untuk memicu animasi keluar terlebih dahulu sebelum menutup chat sepenuhnya
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       setIsOpen(false);
       setIsClosing(false);
-    }, 200); // Durasi disamakan dengan durasi animasi customPopDown (0.2s)
+    }, 200);
   };
 
-  // Mapping ukuran khusus laptop
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+    
+    const userMessage = { role: "user", content: input };
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [...messages, userMessage] })
+      });
+
+      if (!response.ok) throw new Error("API Error");
+      
+      const data = await response.json();
+      setMessages(prev => [...prev, { role: "assistant", content: data.message || data.error }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: "assistant", content: "Maaf, terjadi kesalahan saat menghubungi AI. Coba lagi nanti." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const sizeClasses = {
     sm: "md:h-11 md:w-11",
     md: "md:h-14 md:w-14",
     lg: "md:h-18 md:w-18"
   };
 
-  const iconSizes = {
-    sm: "md:h-5 md:w-5",
-    md: "md:h-7 md:w-7",
-    lg: "md:h-9 md:w-9"
-  };
-
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
-      {/* Kumpulan Animasi CSS Murni (Masuk & Keluar) */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes customFloat {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
         }
         @keyframes customPopUp {
-          0% {
-            opacity: 0;
-            transform: scale(0.8) translateY(20px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
+          0% { opacity: 0; transform: scale(0.8) translateY(20px); }
+          100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes customPopDown {
-          0% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-          100% {
-            opacity: 0;
-            transform: scale(0.8) translateY(20px);
-          }
+          0% { opacity: 1; transform: scale(1) translateY(0); }
+          100% { opacity: 0; transform: scale(0.8) translateY(20px); }
         }
-        .animasi-melayang {
-          animation: customFloat 3s ease-in-out infinite;
-        }
-        .animasi-popup {
-          animation: customPopUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        .animasi-popdown {
-          animation: customPopDown 0.2s ease-in forwards;
-        }
+        .animasi-melayang { animation: customFloat 3s ease-in-out infinite; }
+        .animasi-popup { animation: customPopUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .animasi-popdown { animation: customPopDown 0.2s ease-in forwards; }
       `}} />
 
-      {/* 1. INTERFACES MENU KLIK KANAN */}
       {!isOpen && showContextMenu && (
         <div className="hidden md:block absolute bottom-full right-0 mb-2 bg-white/90 backdrop-blur-sm border border-gray-100 shadow-xl rounded-xl p-1.5 min-w-[120px] transition-all">
           <p className="text-[10px] font-bold text-gray-400 px-2.5 py-1 uppercase tracking-wider">Ukuran Ikon</p>
-          <button 
-            onClick={() => setSize('sm')} 
-            className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors ${size === 'sm' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-          >
-            Kecil
-          </button>
-          <button 
-            onClick={() => setSize('md')} 
-            className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors ${size === 'md' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-          >
-            Normal
-          </button>
-          <button 
-            onClick={() => setSize('lg')} 
-            className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors ${size === 'lg' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}
-          >
-            Besar
-          </button>
+          <button onClick={() => setSize('sm')} className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors ${size === 'sm' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}>Kecil</button>
+          <button onClick={() => setSize('md')} className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors ${size === 'md' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}>Normal</button>
+          <button onClick={() => setSize('lg')} className={`w-full text-left px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors ${size === 'lg' ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}`}>Besar</button>
         </div>
       )}
 
-      {/* 2. FLOATING BUTTON CHATBOT */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            setShowContextMenu(true);
-          }}
+          onContextMenu={(e) => { e.preventDefault(); setShowContextMenu(true); }}
           title="Klik kiri untuk chat, Klik kanan untuk ubah ukuran"
-          className={`animasi-melayang flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-[0_4px_20px_rgba(37,99,235,0.3)] transition-all hover:scale-105 active:scale-95 ${sizeClasses[size]}`}
+          className={`animasi-melayang flex items-center justify-center rounded-full bg-blue-600 shadow-[0_4px_20px_rgba(37,99,235,0.3)] transition-all hover:scale-105 active:scale-95 ${sizeClasses[size]} overflow-hidden p-1`}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className={`h-7 w-7 transition-all ${iconSizes[size]}`}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9.813 15.904 9 21l8.982-5.03c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018c0 1.602 1.123 2.994 2.707 3.227l4.856.618Z"
-            />
-          </svg>
+          <Player autoplay loop src="https://lottie.host/710ecdf4-8c74-496c-b44d-147e56edfd7f/ee47FIKnRe.json" style={{ width: '100%', height: '100%' }} />
         </button>
       )}
 
-      {/* 3. JENDELA CHAT ASISTEN AI (DENGAN ANIMASI MASUK & KELUAR) */}
       {(isOpen || isClosing) && (
         <div className={`
           fixed inset-0 flex flex-col bg-white shadow-[0_10px_40px_rgba(0,0,0,0.12)]
           md:absolute md:bottom-0 md:right-0 md:top-auto md:left-auto
           md:h-[530px] md:w-[380px] md:rounded-2xl md:border md:border-gray-100
-          
-          origin-bottom-right
-          ${isClosing ? "animasi-popdown" : "animasi-popup"}
+          origin-bottom-right ${isClosing ? "animasi-popdown" : "animasi-popup"}
         `}>
-          {/* HEADER CHAT */}
           <div className="flex items-center justify-between bg-blue-600 p-4 text-white md:rounded-t-2xl">
             <div className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.7)]"></div>
@@ -148,40 +135,53 @@ export default function Chatbot() {
                 <span className="text-[10px] text-blue-200 block -mt-0.5">Sistem Siap Membantu</span>
               </div>
             </div>
-            
-            {/* TOMBOL BATAL / TUTUP CHAT */}
-            <button 
-              onClick={handleClose}
-              className="p-1.5 rounded-lg hover:bg-white/20 text-white/90 hover:text-white transition-colors"
-              aria-label="Tutup Chat"
-            >
+            <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-white/20 text-white/90 hover:text-white transition-colors">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* BODY CHAT */}
           <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-4">
-            <div className="flex items-start gap-2.5 max-w-[85%]">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">
-                AI
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`flex items-start gap-2.5 max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}>
+                {msg.role !== "user" && (
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">AI</div>
+                )}
+                <div className={`rounded-2xl p-3 text-sm shadow-sm border border-gray-100 leading-relaxed ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none" : "bg-white text-gray-700 rounded-tl-none"}`}>
+                  {msg.content}
+                </div>
               </div>
-              <div className="rounded-2xl rounded-tl-none bg-white p-3 text-sm text-gray-700 shadow-sm border border-gray-100 leading-relaxed">
-                Halo! Saya **Asisten AI**. Ada yang bisa saya bantu terkait informasi tumbuh kembang balita hari ini?
+            ))}
+            {isLoading && (
+              <div className="flex items-start gap-2.5 max-w-[85%]">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">AI</div>
+                <div className="rounded-2xl rounded-tl-none bg-white p-4 text-sm shadow-sm border border-gray-100 flex gap-1">
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                </div>
               </div>
-            </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* FOOTER INPUT CHAT */}
           <div className="border-t border-gray-100 p-4 bg-white md:rounded-b-2xl">
             <div className="flex gap-2">
               <input
                 type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Tanyakan sesuatu pada Asisten AI..."
                 className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
+                disabled={isLoading}
               />
-              <button className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-sm">
+              <button 
+                onClick={handleSendMessage}
+                disabled={isLoading}
+                className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 active:scale-95 transition-all shadow-sm disabled:opacity-50 disabled:pointer-events-none"
+              >
                 Kirim
               </button>
             </div>
