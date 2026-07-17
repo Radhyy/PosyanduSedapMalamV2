@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import ActivateButton from "./ActivateButton";
 import Link from "next/link";
+import DeleteButton from "./DeleteButton";
 
 export default async function JadwalPage() {
   const jadwals = await prisma.jadwalPosyandu.findMany({
@@ -54,8 +55,10 @@ export default async function JadwalPage() {
                     <td className="px-6 py-4 text-gray-600">{jadwal.lokasi}</td>
                     <td className="px-6 py-4 text-gray-600 max-w-xs truncate">{jadwal.agenda}</td>
                     <td className="px-6 py-4 text-center space-x-2">
-                      <button className="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded" title="Edit"><i className="fa-solid fa-pen-to-square"></i></button>
-                      <button className="text-red-600 hover:bg-red-50 px-2 py-1 rounded" title="Hapus"><i className="fa-solid fa-trash"></i></button>
+                      <Link href={`/admin/jadwal/edit/${jadwal.id}`} className="inline-block text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors" title="Edit">
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </Link>
+                      <DeleteButton id={jadwal.id} />
                     </td>
                   </tr>
                 ))

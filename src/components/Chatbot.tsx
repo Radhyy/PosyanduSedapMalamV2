@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import ReactMarkdown from "react-markdown";
 
 const Player = dynamic(
   () => import('@lottiefiles/react-lottie-player').then((mod) => mod.Player),
@@ -146,10 +147,24 @@ export default function Chatbot() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex items-start gap-2.5 max-w-[85%] ${msg.role === "user" ? "ml-auto flex-row-reverse" : ""}`}>
                 {msg.role !== "user" && (
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">AI</div>
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white mt-1">AI</div>
                 )}
-                <div className={`rounded-2xl p-3 text-sm shadow-sm border border-gray-100 leading-relaxed ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none" : "bg-white text-gray-700 rounded-tl-none"}`}>
-                  {msg.content}
+                <div className={`rounded-2xl p-3 text-sm shadow-sm border border-gray-100 leading-relaxed ${msg.role === "user" ? "bg-blue-600 text-white rounded-tr-none whitespace-pre-wrap" : "bg-white text-gray-700 rounded-tl-none prose prose-sm prose-blue max-w-none"}`}>
+                  {msg.role === "user" ? (
+                    msg.content
+                  ) : (
+                    <ReactMarkdown
+                      components={{
+                        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                        li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                        strong: ({node, ...props}) => <strong className="font-semibold text-gray-900" {...props} />,
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
                 </div>
               </div>
             ))}

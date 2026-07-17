@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import AdminCharts from "../admin/AdminCharts";
 
 export default async function KaderDashboard() {
   const now = new Date();
@@ -70,6 +71,23 @@ export default async function KaderDashboard() {
 
   const chartData = await Promise.all(chartDataPromises);
   const maxChartCount = Math.max(...chartData.map(d => d.count), 5); // Fallback max to 5
+
+  // Fetch Chart Data for Recharts
+  const countL = await prisma.balita.count({ where: { jenisKelamin: 'L' } });
+  const countP = await prisma.balita.count({ where: { jenisKelamin: 'P' } });
+  const genderData = [
+    { name: 'Laki-laki', value: countL },
+    { name: 'Perempuan', value: countP }
+  ];
+
+  const countOrtu = await prisma.user.count({ where: { role: 'orangtua' } });
+  const countKdr = await prisma.user.count({ where: { role: 'kader' } });
+  const countAdm = await prisma.user.count({ where: { role: 'admin' } });
+  const userData = [
+    { name: 'Orang Tua', value: countOrtu },
+    { name: 'Kader', value: countKdr },
+    { name: 'Admin', value: countAdm }
+  ];
 
   return (
     <div className="pb-8">
@@ -199,6 +217,8 @@ export default async function KaderDashboard() {
           </div>
         </div>
       </div>
+
+      <AdminCharts genderData={genderData} userData={userData} />
     </div>
   );
 }

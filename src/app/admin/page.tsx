@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
+import AdminCharts from "./AdminCharts";
 
 export default async function AdminDashboard() {
   const now = new Date();
@@ -29,6 +30,23 @@ export default async function AdminDashboard() {
     orderBy: { createdAt: 'desc' },
     include: { orangtua: { include: { user: true } } }
   });
+
+  // Fetch Chart Data
+  const countL = await prisma.balita.count({ where: { jenisKelamin: 'L' } });
+  const countP = await prisma.balita.count({ where: { jenisKelamin: 'P' } });
+  const genderData = [
+    { name: 'Laki-laki', value: countL },
+    { name: 'Perempuan', value: countP }
+  ];
+
+  const countOrtu = await prisma.user.count({ where: { role: 'orangtua' } });
+  const countKdr = await prisma.user.count({ where: { role: 'kader' } });
+  const countAdm = await prisma.user.count({ where: { role: 'admin' } });
+  const userData = [
+    { name: 'Orang Tua', value: countOrtu },
+    { name: 'Kader', value: countKdr },
+    { name: 'Admin', value: countAdm }
+  ];
 
   return (
     <div className="pb-8">
@@ -167,6 +185,8 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      <AdminCharts genderData={genderData} userData={userData} />
     </div>
   );
 }

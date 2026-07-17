@@ -68,3 +68,58 @@ export async function createJadwal(formData: FormData) {
     return { success: false, error: "Gagal menyimpan jadwal" };
   }
 }
+
+export async function deleteJadwal(id: number) {
+  try {
+    await prisma.jadwalPosyandu.delete({
+      where: { id }
+    });
+    revalidatePath("/admin/jadwal");
+    revalidatePath("/");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete jadwal:", error);
+    return { success: false, error: "Gagal menghapus jadwal" };
+  }
+}
+
+export async function updateJadwal(id: number, formData: FormData) {
+  try {
+    const tanggalStr = formData.get("tanggal") as string;
+    let tanggal: Date;
+    if (tanggalStr.includes('/')) {
+      const [day, month, year] = tanggalStr.split('/');
+      tanggal = new Date(`${year}-${month}-${day}`);
+    } else if (tanggalStr.includes('-') && tanggalStr.split('-')[0].length !== 4) {
+      const [day, month, year] = tanggalStr.split('-');
+      tanggal = new Date(`${year}-${month}-${day}`);
+    } else {
+      tanggal = new Date(tanggalStr);
+    }
+    
+    if (isNaN(tanggal.getTime())) {
+      throw new Error(`Format tanggal tidak valid: ${tanggalStr}`);
+    }
+    const waktuMulai = formData.get("waktuMulai") as string;
+    const waktuSelesai = formData.get("waktuSelesai") as string;
+    const lokasi = formData.get("lokasi") as string;
+    const agenda = formData.get("agenda") as string;
+
+    await prisma.jadwalPosyandu.update({
+      where: { id },
+      data: {
+        tanggal,
+        waktuMulai,
+        waktuSelesai,
+        lokasi,
+        agenda
+      }
+    });
+
+    revalidatePath("/admin/jadwal");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update jadwal:", error);
+    return { success: false, error: "Gagal memperbarui jadwal" };
+  }
+}
