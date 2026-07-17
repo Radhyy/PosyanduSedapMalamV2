@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
+import { usePathname } from "next/navigation";
 
 const Player = dynamic(
   () => import('@lottiefiles/react-lottie-player').then((mod) => mod.Player),
@@ -15,6 +16,8 @@ export default function Chatbot() {
   const [size, setSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [showContextMenu, setShowContextMenu] = useState(false);
   
+  const pathname = usePathname();
+
   // Chat state
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([
     { role: "assistant", content: "Halo! Saya **Asisten AI Spesialis Anak**. Ada yang bisa saya bantu terkait informasi tumbuh kembang balita dan kesehatan hari ini?" }
@@ -22,6 +25,8 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  if (pathname === "/auth/login") return null;
 
   // Auto-scroll to bottom
   useEffect(() => {
