@@ -3,6 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import Script from "next/script";
 import Chatbot from "@/components/Chatbot";
+import MouseEffects from "@/components/MouseEffects";
 
 const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700', '800'],
@@ -34,6 +35,9 @@ export default function RootLayout({
 
         {/* 2. PASANG CHATBOT DI SINI */}
         <Chatbot />
+        
+        {/* 3. EFEK KLIK MOUSE */}
+        <MouseEffects />
       </body>
     </html>
   );
