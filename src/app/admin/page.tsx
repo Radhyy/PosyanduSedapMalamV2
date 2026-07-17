@@ -18,9 +18,10 @@ export default async function AdminDashboard() {
   const totalKader = await prisma.kader.count();
   const totalPengguna = await prisma.user.count();
 
-  // Fetch Jadwal Terdekat
+  // Fetch Jadwal Terdekat (Mulai dari awal hari ini agar jadwal hari ini tetap muncul)
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const jadwalTerdekat = await prisma.jadwalPosyandu.findFirst({
-    where: { tanggal: { gte: now } },
+    where: { tanggal: { gte: startOfToday } },
     orderBy: { tanggal: 'asc' }
   });
 

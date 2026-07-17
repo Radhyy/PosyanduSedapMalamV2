@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import ExportExcelButton from "./ExportExcelButton";
 
 export default async function KaderLaporanPage() {
   // Setup tanggal awal dan akhir bulan ini
@@ -105,9 +106,7 @@ export default async function KaderLaporanPage() {
           <h1 className="text-2xl font-bold text-gray-900">Laporan Posyandu</h1>
           <p className="text-gray-500">Ringkasan real-time pertumbuhan dan imunisasi balita</p>
         </div>
-        <button className="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-bold transition-colors shadow-sm flex items-center gap-2 transform hover:-translate-y-0.5">
-          <i className="fa-solid fa-file-excel"></i> Export Excel
-        </button>
+        <ExportExcelButton data={listKunjungan} namaBulan={namaBulan} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 mb-8">

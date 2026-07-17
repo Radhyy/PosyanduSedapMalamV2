@@ -41,7 +41,7 @@ export default function Navbar() {
           <Link href="/#layanan" className="text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors">Layanan</Link>
           <Link href="/#jadwal" className="text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors">Jadwal</Link>
           <Link href="/hasil-imunisasi" className="text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors">Pantau Hasil</Link>
-          <Link href="/#artikel" className="text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors">Artikel</Link>
+          <Link href="/panduan" className="text-gray-600 hover:text-blue-600 font-medium text-sm transition-colors">Panduan</Link>
         </div>
 
         <div className="hidden md:flex items-center gap-4">
@@ -98,7 +98,7 @@ export default function Navbar() {
           <Link href="/#layanan" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50 rounded-xl text-gray-700 font-medium">Layanan</Link>
           <Link href="/#jadwal" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50 rounded-xl text-gray-700 font-medium">Jadwal</Link>
           <Link href="/hasil-imunisasi" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50 rounded-xl text-gray-700 font-medium">Pantau Hasil</Link>
-          <Link href="/#artikel" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50 rounded-xl text-gray-700 font-medium">Artikel</Link>
+          <Link href="/panduan" onClick={() => setIsMobileMenuOpen(false)} className="px-4 py-3 hover:bg-blue-50 rounded-xl text-gray-700 font-medium">Panduan</Link>
           <hr className="my-2 border-gray-100" />
           {user ? (
             <>
