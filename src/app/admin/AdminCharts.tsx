@@ -38,7 +38,7 @@ export default function AdminCharts({ genderData, userData }: ChartProps) {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => [`${value} Anak`, 'Total']}
+                  formatter={(value: any) => [`${value} Anak`, 'Total']}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
                 />
                 <Legend iconType="circle" />
